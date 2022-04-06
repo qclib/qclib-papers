@@ -1,7 +1,20 @@
+# Copyright 2021 qclib project.
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 import numpy as np
 import pickle as pkl
-import csv
 from scipy import stats
 from qiskit import Aer
 from qiskit.providers.aer.noise import  NoiseModel
@@ -133,101 +146,39 @@ def build_quantum_instance(instance_type, seed=7, n_shots=2000, device='CPU'):
                            seed_transpiler=seed,
                            shots=n_shots)
 
-def compute_data_frequencies(data, higher_bound=None, complete=True, n_bins=None):
+def compute_estimated_pmf(dist_type: str, loc: float, scale: float, x_points, n_qubits: int):
   """
-    Compute the frequencies density distribution of the data
+    Computes the estimated PMF according to the cumulative distribution
+    functions of the distribution type selected
+
     Args: 
-      data: numpy ndarray with the data
-      higher_bound: higher boud to be used incase the frequencies are suposed to be
-                   discretized and truncated
-      complete: Tell the procedure to buld an histogram with the complete probability
-                insted of the discretized and trucated probability
+      dist_type: String, Selected distribution
+      loc: Float, The expected value of the selected distribution
+      scale: Float, The scale of the selected distribution
+      x_points: Array, The collection of points on which the distirbution is 
+                discretized
+      n_qubits: The total number of qubits used in the quantum circuit
   """
-  if complete :
-    assert n_bins is not None
-    p_data, _ = np.histogram(data, bins=n_bins)
-    p_data = p_data / p_data.sum()
-    return p_data
-  else:
-    assert higher_bound is not None
-    p_data = np.round(data)
-    p_data = p_data[p_data <= higher_bound]
-    p_data = np.array([(p_data == bound_idx).sum() for bound_idx in range(int(higher_bound)+1)])
-    p_data = p_data / np.sum(p_data)
-    return p_data
 
-def compute_ks_test(samp_1, samp_2, acceptance_bound=0.0859):
-    ks_test = np.abs(np.cumsum(samp_1) - np.cumsum(samp_2)).max()
-    return ks_test, ks_test < acceptance_bound
+  distance = (x_points.max() - x_points.min()) / (2**n_qubits - 1)
+  delta = distance * .5
 
-def write_metrics_csv(metrics_dict, file_name, header=False):
-
-  mode = None
-  writing_values = None 
-  if header: 
-    mode = '+w' 
-    writing_values = list(metrics_dict.keys())
+  if dist_type == 'lognormal':
+    xcdf_plus = stats.lognorm.cdf(x_points + delta, s=1, scale=scale)
+    xcdf_minus = stats.lognorm.cdf(x_points - delta, s=1, scale=scale)
+  elif dist_type == 'laplace':
+    xcdf_plus = stats.laplace.cdf(x_points + delta, loc=loc, scale=scale)
+    xcdf_minus = stats.laplace.cdf(x_points - delta, loc=loc, scale=scale)
+  elif dist_type == 'normal':
+    xcdf_plus = stats.norm.cdf(x_points + delta, loc=loc, scale=scale)
+    xcdf_minus = stats.norm.cdf(x_points - delta, loc=loc, scale=scale)
+  elif dist_type == 'semicircular':
+    xcdf_plus = stats.semicircular.cdf(x_points + delta, loc=loc, scale=scale)
+    xcdf_minus = stats.semicircular.cdf(x_points - delta, loc=loc, scale=scale)
   else: 
-    mode = '+a'
-    writing_values = np.array(list(metrics_dict.values()))[:, -1].tolist()
-  with open(file_name, mode) as f_csv: 
-    writer = csv.writer(f_csv)
-    writer.writerow(writing_values)
+    raise Exception('Unmapped distribution')
 
-def write_csv(values, file_name): 
-  mode = '+a'
-  if not os.path.exists(file_name):
-    mode = '+w'
-  with open(file_name, mode) as f_csv: 
-    for line in values: 
-      writer = csv.writer(f_csv)
-      writer.writerow(line)
-
-def plot_bars(
-  g_probs,
-  real_probs, 
-  value_bounds, 
-  file_name: str,
-  x = None,
-  cumulated: bool =False): 
-
-  gen_label = "generated-freqs"
-  real_label = "real-freqs"
-  if cumulated: 
-    g_probs = np.cumsum(g_probs)
-    real_probs = np.cumsum(real_probs)
-
-  if x is None:
-    x = list(range(int(value_bounds[1]+1)))
-  bar_width = 1 / np.ceil(np.log2(value_bounds[1]))
-  plt.bar(x, g_probs, width=bar_width, color='darkblue', label=gen_label)
-  plt.plot(x, real_probs, '-o', color='deepskyblue', label=real_label)
-  plt.ylabel('P(X)')
-  plt.xlabel('X')
-  plt.legend(loc='best')
-  plt.savefig(file_name)
-  plt.clf()
-
-def plot_loss_rel_entr(
-  g_loss,
-  d_loss,
-  rel_entr, 
-  file_name: str): 
-
-  fig, (ax_loss, ax_rel_entr) = plt.subplots(1, 2, dpi=90, figsize=(10, 3))
-
-  ax_loss.plot(d_loss, '--', color='red', label='d-loss')
-  ax_loss.plot(g_loss, ':', color='blue', label='g-loss')
-  ax_loss.set_xlabel('epoch')
-  ax_loss.set_ylabel('loss')
-  ax_loss.legend()
-
-  ax_rel_entr.plot(rel_entr, '-.', color='darkred', label='rel_entr')
-  ax_rel_entr.set_xlabel('epoch')
-  ax_rel_entr.set_ylabel('rel_entr')
-  plt.subplots_adjust(wspace=0.3)
-  plt.savefig(file_name)
-  plt.clf()
+  return xcdf_plus - xcdf_minus
 
 def extract_statevector_from_generator(quantum_instance, generator):
   """
