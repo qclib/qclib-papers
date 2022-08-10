@@ -1,5 +1,5 @@
 # Approximated quantum-state preparation with entanglement dependent complexity
-https://arxiv.org/abs/2111.03132
+https://arxiv.org/abs/2111.03132v2
 
 ## List of figures:
 - [Figure 2](distributions.ipynb)

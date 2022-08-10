@@ -1,5 +1,5 @@
 # qclib-papers
-Code and data to reproduce results from papers using qclib
+Code and data to reproduce results from papers using [qclib](https://github.com/qclib/qclib).
 
 ## List of papers:
 - [Configurable sublinear circuits for quantum state preparation](bdsp/README.md)
