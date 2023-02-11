@@ -6,6 +6,7 @@ https://arxiv.org/abs/2111.03132v2
 - [Figure 3](lognormal_experiment.ipynb)
 - [Figure 4.a](vqc_extra_data.ipynb)
 - [Figure 4.c](vqc.ipynb)
+- [Figure 6](greedy_vs_brute_force.ipynb)
 - [SUPPL. Figure 1](qgan.ipynb)
 - [SUPPL. Figure 2](qgan.ipynb)
 - [SUPPL. Figure 3](lrsp_counts.ipynb)
