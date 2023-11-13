@@ -59,8 +59,10 @@ the paper to enhance the reader's understanding. Below are the figures included:
 
 - [Figure 6](#figure_6) 
 - [Figure 10](#figure_10) 
-- [Figure 11](#figure_11) 
-- <a href='ldamcsqg.ipynb/figure-12'> Figure 12</a> 
+- [Figure 11](#figure_11)
+- <a href='#figure-12'>Figure 12</a>
+
+
 
 These graphics play a crucial role in conveying our results visually. For detailed insights, please refer to the 
 corresponding sections in the paper where each figure is discussed in detail.
