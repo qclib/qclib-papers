@@ -1,3 +1,4 @@
+import numpy as np
 class Cost:
 
     @staticmethod
@@ -19,5 +20,17 @@ class Cost:
     @staticmethod
     def mt_su2(n, n_target):
         return 16 * (n + 1) - 40 + 16 * (n_target - 1)
+
+    @staticmethod
+    def get_k_barenco(epsilon):
+        quotient = np.pi / epsilon
+        return int(np.ceil(np.log2(quotient)))
+
+    @staticmethod
+    def c_barenco_rec(n, i, k):
+        n_ctrl = n - i - 1
+        if n_ctrl == n - k - 1:
+            return 0
+        return 32 * (n - i) - 76 + Cost.c_barenco_rec(n, i + 1, k)
 
 
