@@ -57,10 +57,10 @@ deactivate
 In this section, we provide a list of key figures that have been generated for our paper. Each figure is referenced in 
 the paper to enhance the reader's understanding. Below are the figures included:
 
-- [Figure 6](ldamcsqg.ipynb#figure-6) 
-- [Figure 10](ldamcsqg.ipynb#figure-10) 
-- [Figure 11](ldamcsqg.ipynb#figure-11)
-- [Figure 12](ldamcsqg.ipynb#figure-12)
+- [Figure 6](benchmarks.ipynb) 
+- [Figure 10](benchmarks.ipynb) 
+- [Figure 11](experiments.ipynb)
+- [Figure 12](experiments.ipynb)
 
 
 
